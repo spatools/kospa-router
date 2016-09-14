@@ -2,7 +2,7 @@
   "name": "kospa-router",
   "version": "0.1.0",
   "description": "Router component for kospa framework",
-  "homepage": "https://github.com/spatools/kospa-router",
+  "homepage": "https://github.com/spatools/kospa-router#readme",
   "author": "Touchify (dev@touchify.co)",
   "license": "MIT",
   "main": "index.js",
