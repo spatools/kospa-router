@@ -1,0 +1,11 @@
+{
+    "compilerOptions": {
+        "target": "es5",
+        "module": "umd",
+        "declaration": true,
+        "baseUrl": ".",
+        "paths": {
+            "@kospa/*": ["node_modules/@kospa/*"]
+        }
+    }
+}

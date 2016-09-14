@@ -1,0 +1,33 @@
+{
+  "name": "kospa-router",
+  "version": "0.1.0",
+  "description": "Router component for kospa framework",
+  "homepage": "https://github.com/spatools/kospa-router",
+  "author": "Touchify (dev@touchify.co)",
+  "license": "MIT",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/spatools/kospa-router.git"
+  },
+  "bugs": {
+    "url": "https://github.com/spatools/kospa-router/issues"
+  },
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "package.json"
+  ],
+  "keywords": [
+    "kospa",
+    "knockout",
+    "ko",
+    "spa",
+    "framework",
+    "router",
+    "app"
+  ],
+  "dependencies": {
+    "kospa-base": "^0.1.1"
+  }
+}
