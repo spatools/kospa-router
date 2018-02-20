@@ -21,8 +21,8 @@
   "scripts": {
     "test": "npm run build",
     "build": "tsc -p .",
-    "build-release": "rmdir /S /Q dist && tsc -p . --outDir dist && copy package.json dist && copy bower.json dist",
-    "prepublish": "npm run build",
+    "build-release": "(rmdir /S /Q dist || echo continue) && tsc -p . --outDir dist && copy package.json dist && copy bower.json dist",
+    "prepublishOnly": "npm run build",
     "prerelease": "npm run build-release && cd dist && git init && git remote add origin %npm_package_homepage% && git fetch --update-head-ok --depth=1 origin release && git branch --track release origin/release && git symbolic-ref HEAD refs/heads/release && git reset",
     "release": "cd dist && git add * && git commit -m \"Release %npm_package_version%\" && git tag %npm_package_version% && git push origin release && git push --tags"
   },
@@ -36,9 +36,9 @@
     "app"
   ],
   "dependencies": {
-    "@kospa/base": "^0.1.1"
+    "@kospa/base": "^0.1.5"
   },
   "devDependencies": {
-    "typescript": "^2.0.2"
+    "typescript": "^2.7.2"
   }
 }

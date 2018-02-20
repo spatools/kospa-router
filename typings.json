@@ -1,9 +1,0 @@
-{
-  "dependencies": {
-    "knockout": "registry:npm/knockout#3.4.0+20160516171930"
-  },
-  "globalDependencies": {
-    "es2015-promise": "registry:env/es2015-promise#1.0.0+20160526151700",
-    "requirejs": "registry:env/requirejs#2.2.0+20160319062041"
-  }
-}

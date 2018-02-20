@@ -2,10 +2,12 @@
     "compilerOptions": {
         "target": "es5",
         "module": "umd",
+        "moduleResolution": "node",
         "declaration": true,
-        "baseUrl": ".",
-        "paths": {
-            "@kospa/*": ["node_modules/@kospa/*"]
-        }
+        "lib": [
+            "es5",
+            "dom",
+            "es2015.promise"
+        ]
     }
 }
