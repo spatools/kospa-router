@@ -1,24 +1,31 @@
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 (function (factory) {
-    if (typeof module === 'object' && typeof module.exports === 'object') {
-        var v = factory(require, exports); if (v !== undefined) module.exports = v;
+    if (typeof module === "object" && typeof module.exports === "object") {
+        var v = factory(require, exports);
+        if (v !== undefined) module.exports = v;
     }
-    else if (typeof define === 'function' && define.amd) {
+    else if (typeof define === "function" && define.amd) {
         define(["require", "exports", "knockout", "@kospa/base/composer", "@kospa/base/system", "@kospa/base/activator"], factory);
     }
 })(function (require, exports) {
     "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
     var ko = require("knockout");
     var composer = require("@kospa/base/composer");
     var system = require("@kospa/base/system");
     var activator = require("@kospa/base/activator");
     //#region BaseRouter Class
     var hasHistory = !!history.pushState, push = Array.prototype.push, slice = Array.prototype.slice;
-    var BaseRouter = (function () {
+    var BaseRouter = /** @class */ (function () {
         function BaseRouter(options) {
             this.routes = {
                 none: { matcher: null, handlers: [baseNotFound] }
@@ -84,7 +91,7 @@ var __extends = (this && this.__extends) || function (d, b) {
         BaseRouter.prototype.none = function () {
             var handlers = [];
             for (var _i = 0; _i < arguments.length; _i++) {
-                handlers[_i - 0] = arguments[_i];
+                handlers[_i] = arguments[_i];
             }
             var route = this.routes.none;
             if (route.handlers[0] === baseNotFound) {
@@ -243,20 +250,20 @@ var __extends = (this && this.__extends) || function (d, b) {
         }
         throw err;
     }
-    var Router = (function (_super) {
+    var Router = /** @class */ (function (_super) {
         __extends(Router, _super);
         function Router(options) {
-            var _this = this;
-            _super.call(this, options);
-            this.routeHandlers = {};
-            this.currentRoute = ko.observable();
-            this.currentViewModel = activator.createActivateObservable();
-            this.isNavigating = ko.observable(false);
-            this.navigation = ko.pureComputed(function () {
+            var _this = _super.call(this, options) || this;
+            _this.routeHandlers = {};
+            _this.currentRoute = ko.observable();
+            _this.currentViewModel = activator.createActivateObservable();
+            _this.isNavigating = ko.observable(false);
+            _this.navigation = ko.pureComputed(function () {
                 return Object.keys(_this.routeHandlers)
                     .map(function (key) { return _this.routeHandlers[key]; })
                     .filter(function (config) { return ko.unwrap(config.visible); });
             });
+            return _this;
         }
         Router.prototype.route = function (config) {
             var handlerId = config.path.toString(), handler = createRouteHandler(this, config);
@@ -312,7 +319,6 @@ var __extends = (this && this.__extends) || function (d, b) {
     }(BaseRouter));
     exports.Router = Router;
     var rootRouter = new Router();
-    Object.defineProperty(exports, "__esModule", { value: true });
     exports.default = rootRouter;
     function createRouteHandler(self, route) {
         return function () {

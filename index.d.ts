@@ -54,10 +54,10 @@ export interface ViewModelRoute extends composer.CompositionOptions {
 }
 export declare class Router extends BaseRouter {
     private routeHandlers;
-    currentRoute: ko.Observable<ViewModelRoute>;
+    currentRoute: any;
     currentViewModel: activator.ActivateObservable<activator.ViewModel>;
-    isNavigating: ko.Observable<boolean>;
-    navigation: ko.PureComputed<ViewModelRoute[]>;
+    isNavigating: any;
+    navigation: any;
     constructor(options?: Options);
     route(config: ViewModelRoute): Router;
     deroute(config: ViewModelRoute): Router;
