@@ -1,7 +1,10 @@
 var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
     return function (d, b) {
         extendStatics(d, b);
         function __() { this.constructor = d; }
@@ -225,9 +228,14 @@ var __extends = (this && this.__extends) || (function () {
             .replace(/^\//, "");
     }
     function createRouteRegExp(route) {
-        route = normalizeRoute(route);
-        route = route.replace("*", ".*");
-        route = route.replace(/:[^\/]+/g, "([^\\/]+)");
+        route = normalizeRoute(route)
+            .replace(/\*/g, function () { return ".*"; })
+            .replace(/\?/g, function () { return "\\?"; })
+            .replace(/\(([^\)]+)\)/g, function (_, t1) {
+            t1 = t1.replace(/:[a-zA-Z0-9]+/g, "([a-zA-Z0-9]+?)");
+            return "(?:" + t1 + ")?";
+        })
+            .replace(/:[a-zA-Z0-9]+/g, "([a-zA-Z0-9]+?)");
         return new RegExp("^" + route + "$");
     }
     function executeHandlers(handlers, args) {
