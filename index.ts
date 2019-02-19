@@ -291,10 +291,10 @@ function createRouteRegExp(route: string): RegExp {
         .replace(/\*/g, () => ".*")
         .replace(/\?/g, () => "\\?")
         .replace(/\(([^\)]+)\)/g, (_, t1) => {
-            t1 = t1.replace(/:[a-zA-Z0-9]+/g, "([a-zA-Z0-9]+?)");
+            t1 = t1.replace(/:[a-zA-Z0-9]+/g, () => "([^\\/\\(\\)\\?]+?)");
             return `(?:${t1})?`;
         })
-        .replace(/:[a-zA-Z0-9]+/g, "([a-zA-Z0-9]+?)");
+        .replace(/:[a-zA-Z0-9]+/g, () => "([^\\/\\(\\)\\?]+?)");
 
     return new RegExp("^" + route + "$");
 }

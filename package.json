@@ -1,6 +1,6 @@
 {
   "name": "@kospa/router",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Router component for kospa framework",
   "homepage": "https://github.com/spatools/kospa-router",
   "author": "Touchify (dev@touchify.co)",
