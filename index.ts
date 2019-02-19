@@ -287,9 +287,14 @@ function normalizeRoute(path: string): string {
         .replace(/^\//, "");
 }
 function createRouteRegExp(route: string): RegExp {
-    route = normalizeRoute(route);
-    route = route.replace("*", ".*");
-    route = route.replace(/:[^\/]+/g, "([^\\/]+)");
+    route = normalizeRoute(route)
+        .replace(/\*/g, () => ".*")
+        .replace(/\?/g, () => "\\?")
+        .replace(/\(([^\)]+)\)/g, (_, t1) => {
+            t1 = t1.replace(/:[a-zA-Z0-9]+/g, "([a-zA-Z0-9]+?)");
+            return `(?:${t1})?`;
+        })
+        .replace(/:[a-zA-Z0-9]+/g, "([a-zA-Z0-9]+?)");
 
     return new RegExp("^" + route + "$");
 }
