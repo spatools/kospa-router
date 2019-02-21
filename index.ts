@@ -334,9 +334,9 @@ function baseOnError(err): any {
 
 export interface ViewModelRoute extends composer.CompositionOptions {
     path: string | RegExp;
-    href?: string | ko.Observable<string>;
-    title?: string | ko.Observable<string>;
-    visible?: boolean | ko.Observable<boolean>;
+    href?: ko.MaybeSubscribable<string>;
+    title?: ko.MaybeSubscribable<string>;
+    visible?: ko.MaybeSubscribable<boolean>;
     handler?: RouteHandler;
 }
 
@@ -442,7 +442,7 @@ function createRouteHandler(self: Router, route: ViewModelRoute): () => PromiseL
 
         return self.currentViewModel.then(
             vm => {
-                document.title = vm && vm.title ? ko.unwrap(vm.title) : ko.unwrap(route.title);
+                document.title = ko.unwrap(vm && vm.title ? vm.title : route.title);
             },
             err => {
                 self.currentRoute(oldRoute);
@@ -457,7 +457,7 @@ function createRouteHandler(self: Router, route: ViewModelRoute): () => PromiseL
 //#region Router Handlers
 
 ko.bindingHandlers["router"] = {
-    init: (element, valueAccessor) => {
+    init(element, valueAccessor) {
         let val = valueAccessor(),
             router: Router;
 
@@ -468,9 +468,6 @@ ko.bindingHandlers["router"] = {
             val = typeof val === "object" ? val.router : val;
             router = val || rootRouter;
         }
-
-        const container = document.createElement("div");
-        ko.virtualElements.setDomNodeChildren(element, [container]);
 
         ko.computed({
             disposeWhenNodeIsRemoved: element,
@@ -483,10 +480,12 @@ ko.bindingHandlers["router"] = {
                     return;
                 }
 
-                composer.compose(container, system.extend({}, config, { viewmodel: vm }))
+                composer.compose(element, system.extend({}, config, { viewmodel: vm }))
                     .catch(system.error);
             }
         });
+
+        return { controlsDescendantBindings: true };
     }
 };
 
