@@ -4,6 +4,7 @@
         "module": "umd",
         "moduleResolution": "node",
         "declaration": true,
+        "strict": true,
         "lib": [
             "es5",
             "dom",

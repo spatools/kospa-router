@@ -20,7 +20,7 @@ export interface Options {
 }
 
 export interface Route {
-    matcher: RegExp;
+    matcher?: RegExp | null;
     handlers: RouteHandler[];
 }
 
@@ -33,10 +33,10 @@ export type RouteHandler = (...args: any[]) => any;
 
 export class BaseRouter {
     private static skip: boolean = false;
-    private _current: string;
-    private timeout: number;
-    private _onError: (err: any) => any;
-    private rootRegExp: RegExp;
+    private _current?: string;
+    private timeout?: number;
+    private _onError?: (err: any) => any;
+    private rootRegExp?: RegExp;
     private routes: Routes = {
         none: { matcher: null, handlers: [baseNotFound] }
     };
@@ -89,7 +89,7 @@ export class BaseRouter {
             route = this.routes[routeId];
 
         if (route) {
-            let handler: RouteHandler,
+            let handler: RouteHandler | undefined,
                 index: number;
 
             while (handler = config.handlers.pop()) {
@@ -129,7 +129,7 @@ export class BaseRouter {
     }
 
     public start(): BaseRouter {
-        let current = null,
+        let current = null as string | null | undefined,
             self = this;
 
         this.stop();
@@ -181,7 +181,7 @@ export class BaseRouter {
         BaseRouter.skip = false;
 
         if (hasHistory) {
-            history.pushState(null, null, this.mode === "history" ? path : "#" + path);
+            history.pushState(null, null as any, this.mode === "history" ? path : "#" + path);
         }
         else {
             location.hash = "#" + path;
@@ -198,7 +198,7 @@ export class BaseRouter {
         BaseRouter.skip = skipHandling || false;
 
         if (hasHistory) {
-            history.replaceState(null, null, this.mode === "history" ? path : "#" + path);
+            history.replaceState(null, null as any, this.mode === "history" ? path : "#" + path);
         }
         else {
             location.hash = "#" + path;
@@ -207,23 +207,22 @@ export class BaseRouter {
         return this;
     }
 
-    public handle(): Promise<BaseRouter>;
-    public handle(fragment: string): Promise<BaseRouter>;
-    public handle(fragment: string = this.getFragment()): Promise<BaseRouter> {
+    public handle(fragment: string | null = this.getFragment()): Promise<BaseRouter> {
         if (fragment === null) {
             return Promise.resolve(this);
         }
 
-        let handlers: RouteHandler[] = [],
-            routeId: string,
-            route: Route,
-            match: RegExpMatchArray;
+        let handlers: RouteHandler[] = [];
 
-        for (routeId in this.routes) {
-            if (match = fragment.match(this.routes[routeId].matcher)) {
+        Object.keys(this.routes).forEach(routeId => {
+            const route = this.routes[routeId];
+            if (!route.matcher) return;
+
+            const match = fragment.match(route.matcher);
+            if (match) {
                 handlers.push(executeHandlers.bind(this, this.routes[routeId].handlers, slice.call(match, 1)));
             }
-        }
+        });
 
         if (handlers.length === 0) {
             handlers = this.routes.none.handlers;
@@ -237,7 +236,7 @@ export class BaseRouter {
             });
     }
 
-    public getFragment(): string {
+    public getFragment(): string | null {
         let fragment = this.mode === "history" ? location.pathname : location.hash;
         fragment = normalizeRoute(fragment);
 
@@ -245,7 +244,7 @@ export class BaseRouter {
             return fragment;
         }
 
-        if (this.rootRegExp.test(fragment)) {
+        if (this.rootRegExp && this.rootRegExp.test(fragment)) {
             return fragment.replace(this.rootRegExp, "");
         }
 
@@ -261,7 +260,7 @@ export class BaseRouter {
 
 //#region Private Methods
 
-function createRouteConfig(args: IArguments): Route {
+function createRouteConfig(args: IArguments): Route & { matcher: RegExp } {
     let i = 0,
         arg = args[0],
         routeRegExp: RegExp;
@@ -280,7 +279,7 @@ function createRouteConfig(args: IArguments): Route {
     };
 }
 
-function normalizeRoute(path: string): string {
+function normalizeRoute(path?: string): string {
     return String(path || "")
         .replace(/^#/, "")
         .replace(/\/$/, "")
@@ -299,7 +298,7 @@ function createRouteRegExp(route: string): RegExp {
     return new RegExp("^" + route + "$");
 }
 
-function executeHandlers(handlers: RouteHandler[], args?: any[]): Promise<any> {
+function executeHandlers(handlers: RouteHandler[], args: any[] = []): Promise<any> {
     let p = Promise.resolve(),
         i = 0, len = handlers.length;
 
@@ -316,7 +315,7 @@ function executeHandler(handler: RouteHandler, args: any[]): any {
 function baseNotFound(): any {
     throw new Error("Not Found");
 }
-function baseOnError(err): any {
+function baseOnError(this: any, err: Error): never {
     system.error("router>", err);
 
     if (this._current) {
@@ -334,17 +333,17 @@ function baseOnError(err): any {
 
 export interface ViewModelRoute extends composer.CompositionOptions {
     path: string | RegExp;
-    href?: ko.MaybeSubscribable<string>;
-    title?: ko.MaybeSubscribable<string>;
-    visible?: ko.MaybeSubscribable<boolean>;
+    href?: ko.MaybeSubscribable<string | null | undefined>;
+    title?: ko.MaybeSubscribable<string | null | undefined>;
+    visible?: ko.MaybeSubscribable<boolean | null | undefined>;
     handler?: RouteHandler;
 }
 
 export class Router extends BaseRouter {
     private routeHandlers: { [key: string]: ViewModelRoute } = {};
 
-    public currentRoute = ko.observable<ViewModelRoute>();
-    public currentViewModel = activator.createActivateObservable<ViewModel>();
+    public currentRoute = ko.observable<ViewModelRoute | null>();
+    public currentViewModel = activator.createActivateObservable<ViewModel | null>();
     public isNavigating = ko.observable(false);
 
     public navigation = ko.pureComputed(() => {
@@ -378,7 +377,7 @@ export class Router extends BaseRouter {
             handlerId = config.path.toString(),
             innerConfig = this.routeHandlers[handlerId];
 
-        if (innerConfig) {
+        if (innerConfig && config.handler) {
             this.remove(innerConfig.path, config.handler);
             delete this.routeHandlers[handlerId];
         }
@@ -442,7 +441,10 @@ function createRouteHandler(self: Router, route: ViewModelRoute): () => PromiseL
 
         return self.currentViewModel.then(
             vm => {
-                document.title = ko.unwrap(vm && vm.title ? vm.title : route.title);
+                const title = vm && vm.title ? ko.unwrap(vm.title) : ko.unwrap(route.title);
+                if (title) {
+                    document.title = title;
+                }
             },
             err => {
                 self.currentRoute(oldRoute);

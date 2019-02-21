@@ -36,7 +36,7 @@
     "app"
   ],
   "dependencies": {
-    "@kospa/base": "^0.1.5"
+    "@kospa/base": "^0.1.7"
   },
   "devDependencies": {
     "typescript": "^3.3.3"
