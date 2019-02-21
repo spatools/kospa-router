@@ -170,12 +170,16 @@ var __extends = (this && this.__extends) || (function () {
             if (fragment === null) {
                 return Promise.resolve(this);
             }
-            var handlers = [], routeId, route, match;
-            for (routeId in this.routes) {
-                if (match = fragment.match(this.routes[routeId].matcher)) {
-                    handlers.push(executeHandlers.bind(this, this.routes[routeId].handlers, slice.call(match, 1)));
+            var handlers = [];
+            Object.keys(this.routes).forEach(function (routeId) {
+                var route = _this.routes[routeId];
+                if (!route.matcher)
+                    return;
+                var match = fragment.match(route.matcher);
+                if (match) {
+                    handlers.push(executeHandlers.bind(_this, _this.routes[routeId].handlers, slice.call(match, 1)));
                 }
-            }
+            });
             if (handlers.length === 0) {
                 handlers = this.routes.none.handlers;
             }
@@ -192,7 +196,7 @@ var __extends = (this && this.__extends) || (function () {
             if (this.root === "") {
                 return fragment;
             }
-            if (this.rootRegExp.test(fragment)) {
+            if (this.rootRegExp && this.rootRegExp.test(fragment)) {
                 return fragment.replace(this.rootRegExp, "");
             }
             return null;
@@ -239,6 +243,7 @@ var __extends = (this && this.__extends) || (function () {
         return new RegExp("^" + route + "$");
     }
     function executeHandlers(handlers, args) {
+        if (args === void 0) { args = []; }
         var p = Promise.resolve(), i = 0, len = handlers.length;
         for (; i < len; i++) {
             p = p.then(executeHandler.bind(null, handlers[i], args));
@@ -285,7 +290,7 @@ var __extends = (this && this.__extends) || (function () {
         };
         Router.prototype.deroute = function (config) {
             var handlerId = config.path.toString(), innerConfig = this.routeHandlers[handlerId];
-            if (innerConfig) {
+            if (innerConfig && config.handler) {
                 this.remove(innerConfig.path, config.handler);
                 delete this.routeHandlers[handlerId];
             }
@@ -335,7 +340,10 @@ var __extends = (this && this.__extends) || (function () {
             self.currentViewModel.args = slice.call(arguments);
             self.currentViewModel(route.viewmodel);
             return self.currentViewModel.then(function (vm) {
-                document.title = vm && vm.title ? ko.unwrap(vm.title) : ko.unwrap(route.title);
+                var title = vm && vm.title ? ko.unwrap(vm.title) : ko.unwrap(route.title);
+                if (title) {
+                    document.title = title;
+                }
             }, function (err) {
                 self.currentRoute(oldRoute);
                 throw err;
@@ -354,8 +362,6 @@ var __extends = (this && this.__extends) || (function () {
                 val = typeof val === "object" ? val.router : val;
                 router = val || rootRouter;
             }
-            var container = document.createElement("div");
-            ko.virtualElements.setDomNodeChildren(element, [container]);
             ko.computed({
                 disposeWhenNodeIsRemoved: element,
                 read: function () {
@@ -363,10 +369,11 @@ var __extends = (this && this.__extends) || (function () {
                     if (!config || !vm) {
                         return;
                     }
-                    composer.compose(container, system.extend({}, config, { viewmodel: vm }))
+                    composer.compose(element, system.extend({}, config, { viewmodel: vm }))
                         .catch(system.error);
                 }
             });
+            return { controlsDescendantBindings: true };
         }
     };
     ko.virtualElements.allowedBindings["router"] = true;

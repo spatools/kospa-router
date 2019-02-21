@@ -7,7 +7,7 @@ export interface Options {
     onError?: (err: any) => any;
 }
 export interface Route {
-    matcher: RegExp;
+    matcher?: RegExp | null;
     handlers: RouteHandler[];
 }
 export interface Routes {
@@ -17,10 +17,10 @@ export interface Routes {
 export declare type RouteHandler = (...args: any[]) => any;
 export declare class BaseRouter {
     private static skip;
-    private _current;
-    private timeout;
-    private _onError;
-    private rootRegExp;
+    private _current?;
+    private timeout?;
+    private _onError?;
+    private rootRegExp?;
     private routes;
     mode: string;
     root: string;
@@ -40,24 +40,23 @@ export declare class BaseRouter {
     replace(): BaseRouter;
     replace(path: string): BaseRouter;
     replace(path: string, skipHandling: boolean): BaseRouter;
-    handle(): Promise<BaseRouter>;
-    handle(fragment: string): Promise<BaseRouter>;
-    getFragment(): string;
+    handle(fragment?: string | null): Promise<BaseRouter>;
+    getFragment(): string | null;
     protected onError(err: any): any;
 }
 export interface ViewModelRoute extends composer.CompositionOptions {
     path: string | RegExp;
-    href?: string | ko.Observable<string>;
-    title?: string | ko.Observable<string>;
-    visible?: boolean | ko.Observable<boolean>;
+    href?: ko.MaybeSubscribable<string | null | undefined>;
+    title?: ko.MaybeSubscribable<string | null | undefined>;
+    visible?: ko.MaybeSubscribable<boolean | null | undefined>;
     handler?: RouteHandler;
 }
 export declare class Router extends BaseRouter {
     private routeHandlers;
-    currentRoute: any;
-    currentViewModel: activator.ActivateObservable<activator.ViewModel>;
-    isNavigating: any;
-    navigation: any;
+    currentRoute: ko.Observable<ViewModelRoute | null>;
+    currentViewModel: activator.ActivateObservable<activator.ViewModel | null>;
+    isNavigating: ko.Observable<boolean>;
+    navigation: ko.PureComputed<ViewModelRoute[]>;
     constructor(options?: Options);
     route(config: ViewModelRoute): Router;
     deroute(config: ViewModelRoute): Router;
