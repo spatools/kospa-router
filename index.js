@@ -177,7 +177,7 @@ var __extends = (this && this.__extends) || (function () {
                     return;
                 var match = fragment.match(route.matcher);
                 if (match) {
-                    handlers.push(executeHandlers.bind(_this, _this.routes[routeId].handlers, slice.call(match, 1)));
+                    handlers.push(executeHandlers.bind(_this, route.handlers, slice.call(match, 1)));
                 }
             });
             if (handlers.length === 0) {
@@ -242,16 +242,30 @@ var __extends = (this && this.__extends) || (function () {
             .replace(/:[a-zA-Z0-9]+/g, function () { return "([^\\/\\(\\)\\?]+?)"; });
         return new RegExp("^" + route + "$");
     }
-    function executeHandlers(handlers, args) {
+    function executeHandlers(handlers, args, i) {
         if (args === void 0) { args = []; }
-        var p = Promise.resolve(), i = 0, len = handlers.length;
-        for (; i < len; i++) {
-            p = p.then(executeHandler.bind(null, handlers[i], args));
+        if (i === void 0) { i = 0; }
+        var len = handlers.length;
+        if (len === 0) {
+            return Promise.resolve();
         }
-        return p;
+        return executeHandler(handlers[i], args)
+            .then(function (res) {
+            if (res === false) {
+                return false;
+            }
+            if (i++ < len - 1) {
+                return executeHandlers(handlers, args, i);
+            }
+        });
     }
     function executeHandler(handler, args) {
-        return handler.apply(null, args);
+        try {
+            return Promise.resolve(handler.apply(null, args));
+        }
+        catch (err) {
+            return Promise.reject(err);
+        }
     }
     function baseNotFound() {
         throw new Error("Not Found");
